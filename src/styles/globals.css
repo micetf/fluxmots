@@ -1,0 +1,530 @@
+/* src/styles/globals.css */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Variables CSS pour FluxMots */
+:root {
+    --flux-primary: #4a90e2;
+    --flux-secondary: #357abd;
+    --flux-success: #10b981;
+    --flux-warning: #f59e0b;
+    --flux-error: #ef4444;
+    --flux-gray-50: #f9fafb;
+    --flux-gray-100: #f3f4f6;
+    --flux-gray-200: #e5e7eb;
+    --flux-gray-300: #d1d5db;
+    --flux-gray-400: #9ca3af;
+    --flux-gray-500: #6b7280;
+    --flux-gray-600: #4b5563;
+    --flux-gray-700: #374151;
+    --flux-gray-800: #1f2937;
+    --flux-gray-900: #111827;
+}
+
+/* Réinitialisation et styles de base */
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family:
+        "Segoe UI",
+        system-ui,
+        -apple-system,
+        sans-serif;
+    line-height: 1.6;
+    color: var(--flux-gray-800);
+    background-color: var(--flux-gray-50);
+    overflow-x: hidden;
+}
+
+/* Styles pour l'affichage des mots */
+.word-display {
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0.02em;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Animations personnalisées */
+@keyframes wordFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes wordFadeOut {
+    from {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+    }
+}
+
+@keyframes pulseGlow {
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(74, 144, 226, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(74, 144, 226, 0);
+    }
+}
+
+/* Classes utilitaires pour les animations */
+.animate-word-in {
+    animation: wordFadeIn 0.3s ease-out;
+}
+
+.animate-word-out {
+    animation: wordFadeOut 0.2s ease-in;
+}
+
+.animate-pulse-glow {
+    animation: pulseGlow 2s infinite;
+}
+
+/* Styles pour les contrôles */
+.controls-button {
+    @apply transition-all duration-200 ease-in-out;
+    @apply focus:outline-none focus:ring-2 focus:ring-flux-primary focus:ring-offset-2;
+}
+
+.controls-button:hover {
+    transform: translateY(-1px);
+}
+
+.controls-button:active {
+    transform: translateY(0);
+}
+
+/* Styles pour le slider de tempo */
+.slider {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+.slider::-webkit-slider-track {
+    background: var(--flux-gray-200);
+    height: 6px;
+    border-radius: 3px;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--flux-primary);
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+}
+
+.slider::-webkit-slider-thumb:hover {
+    background: var(--flux-secondary);
+    transform: scale(1.1);
+}
+
+.slider::-moz-range-track {
+    background: var(--flux-gray-200);
+    height: 6px;
+    border-radius: 3px;
+    border: none;
+}
+
+.slider::-moz-range-thumb {
+    background: var(--flux-primary);
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+}
+
+.slider::-moz-range-thumb:hover {
+    background: var(--flux-secondary);
+    transform: scale(1.1);
+}
+
+/* Styles pour la barre de progression */
+.progress-bar {
+    @apply transition-all duration-300 ease-out;
+    background: linear-gradient(
+        90deg,
+        var(--flux-primary),
+        var(--flux-secondary)
+    );
+}
+
+.progress-circle {
+    @apply transition-all duration-300 ease-out;
+    stroke: var(--flux-primary);
+    stroke-linecap: round;
+}
+
+/* Styles pour les modals */
+.modal-overlay {
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Styles pour les onglets */
+.tab-button {
+    @apply transition-all duration-200 ease-in-out;
+    @apply focus:outline-none focus:ring-2 focus:ring-flux-primary focus:ring-offset-2;
+}
+
+.tab-button.active {
+    @apply shadow-md;
+}
+
+/* Styles pour les listes */
+.list-item {
+    @apply transition-all duration-200 ease-in-out;
+    @apply hover:shadow-md;
+}
+
+.list-item.selected {
+    @apply shadow-lg;
+    border-color: var(--flux-primary);
+    background: linear-gradient(
+        135deg,
+        rgba(74, 144, 226, 0.1) 0%,
+        rgba(74, 144, 226, 0.05) 100%
+    );
+}
+
+/* Styles pour les éléments de formulaire */
+.form-input {
+    @apply transition-all duration-200 ease-in-out;
+    @apply focus:outline-none focus:ring-2 focus:ring-flux-primary focus:border-flux-primary;
+}
+
+.form-input:focus {
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+}
+
+.form-checkbox {
+    @apply focus:ring-flux-primary;
+    accent-color: var(--flux-primary);
+}
+
+.form-select {
+    @apply form-input;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+}
+
+/* Styles pour les boutons */
+.btn {
+    @apply controls-button;
+    @apply font-medium rounded-lg;
+    @apply inline-flex items-center justify-center gap-2;
+    @apply text-sm px-4 py-2;
+}
+
+.btn-primary {
+    @apply bg-flux-primary text-white;
+    @apply hover:bg-flux-secondary;
+    @apply shadow-md hover:shadow-lg;
+}
+
+.btn-secondary {
+    @apply bg-white text-flux-gray-700 border border-flux-gray-300;
+    @apply hover:bg-flux-gray-50 hover:border-flux-primary;
+}
+
+.btn-success {
+    @apply bg-flux-success text-white;
+    @apply hover:bg-green-700;
+    @apply shadow-md hover:shadow-lg;
+}
+
+.btn-warning {
+    @apply bg-flux-warning text-white;
+    @apply hover:bg-yellow-600;
+    @apply shadow-md hover:shadow-lg;
+}
+
+.btn-error {
+    @apply bg-flux-error text-white;
+    @apply hover:bg-red-600;
+    @apply shadow-md hover:shadow-lg;
+}
+
+.btn-disabled {
+    @apply opacity-50 cursor-not-allowed;
+    @apply pointer-events-none;
+}
+
+/* Styles pour les badges */
+.badge {
+    @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium;
+}
+
+.badge-primary {
+    @apply bg-flux-primary bg-opacity-10 text-flux-primary;
+}
+
+.badge-success {
+    @apply bg-flux-success bg-opacity-10 text-flux-success;
+}
+
+.badge-warning {
+    @apply bg-flux-warning bg-opacity-10 text-flux-warning;
+}
+
+.badge-error {
+    @apply bg-flux-error bg-opacity-10 text-flux-error;
+}
+
+.badge-gray {
+    @apply bg-flux-gray-100 text-flux-gray-700;
+}
+
+/* Styles pour les cartes */
+.card {
+    @apply bg-white rounded-lg shadow-sm border border-flux-gray-200;
+    @apply transition-all duration-200 ease-in-out;
+}
+
+.card:hover {
+    @apply shadow-md;
+}
+
+.card-header {
+    @apply px-6 py-4 border-b border-flux-gray-200;
+}
+
+.card-body {
+    @apply px-6 py-4;
+}
+
+.card-footer {
+    @apply px-6 py-4 border-t border-flux-gray-200 bg-flux-gray-50;
+}
+
+/* Styles pour les alertes */
+.alert {
+    @apply p-4 rounded-lg border;
+}
+
+.alert-success {
+    @apply bg-green-50 border-green-200 text-green-800;
+}
+
+.alert-warning {
+    @apply bg-yellow-50 border-yellow-200 text-yellow-800;
+}
+
+.alert-error {
+    @apply bg-red-50 border-red-200 text-red-800;
+}
+
+.alert-info {
+    @apply bg-blue-50 border-blue-200 text-blue-800;
+}
+
+/* Styles pour les tooltips */
+.tooltip {
+    @apply absolute z-10 px-3 py-2 text-sm font-medium text-white bg-flux-gray-900 rounded-lg shadow-lg;
+    @apply opacity-0 pointer-events-none transition-opacity duration-300;
+}
+
+.tooltip.show {
+    @apply opacity-100;
+}
+
+/* Styles pour les états de chargement */
+.loading-spinner {
+    @apply inline-block w-4 h-4 border-2 border-flux-gray-200 border-t-flux-primary rounded-full animate-spin;
+}
+
+.loading-dots {
+    @apply inline-flex gap-1;
+}
+
+.loading-dots span {
+    @apply w-2 h-2 bg-flux-primary rounded-full animate-bounce;
+}
+
+.loading-dots span:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.loading-dots span:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+/* Styles pour les écrans tactiles */
+@media (hover: none) {
+    .controls-button:hover {
+        transform: none;
+    }
+
+    .slider::-webkit-slider-thumb:hover {
+        transform: none;
+    }
+}
+
+/* Styles pour l'impression */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    body {
+        background: white !important;
+        color: black !important;
+    }
+}
+
+/* Styles pour les préférences de mouvement réduit */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Styles pour le mode sombre (futur) */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --flux-gray-50: #111827;
+        --flux-gray-100: #1f2937;
+        --flux-gray-200: #374151;
+        --flux-gray-300: #4b5563;
+        --flux-gray-400: #6b7280;
+        --flux-gray-500: #9ca3af;
+        --flux-gray-600: #d1d5db;
+        --flux-gray-700: #e5e7eb;
+        --flux-gray-800: #f3f4f6;
+        --flux-gray-900: #f9fafb;
+    }
+}
+
+/* Styles pour les hautes résolutions */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .word-display {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}
+
+/* Styles pour les très grands écrans */
+@media (min-width: 1920px) {
+    .container {
+        max-width: 1440px;
+    }
+}
+
+/* Styles pour les écrans ultra-larges */
+@media (min-width: 2560px) {
+    .word-display {
+        font-size: clamp(2rem, 8vw, 16rem);
+    }
+}
+
+/* Styles pour l'accessibilité */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.focus-visible:focus {
+    outline: 2px solid var(--flux-primary);
+    outline-offset: 2px;
+}
+
+/* Styles pour les barres de défilement */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--flux-gray-100);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--flux-gray-300);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--flux-gray-400);
+}
+
+/* Styles pour les éléments cachés */
+.hidden {
+    display: none !important;
+}
+
+.invisible {
+    visibility: hidden !important;
+}
+
+/* Transitions globales */
+.transition-all {
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}

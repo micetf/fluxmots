@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <!-- Titre et description -->
+        <title>FluxMots - Fluence de lecture | MiCetF.fr</title>
+        <meta
+            name="description"
+            content="Application de fluence de lecture pour enseignants du premier degré. Entraînement rythmé avec listes officielles CE1 et personnalisées."
+        />
+        <meta
+            name="keywords"
+            content="fluence, lecture, enseignement, primaire, CP, CE1, CE2, éducation, pédagogie"
+        />
+        <meta name="author" content="Frédéric Misery - MiCetF.fr" />
+
+        <!-- Favicon -->
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="icon" type="image/png" href="/favicon.png" />
+
+        <!-- PWA Manifest -->
+        <link rel="manifest" href="/manifest.json" />
+
+        <!-- Métadonnées PWA -->
+        <meta name="theme-color" content="#4a90e2" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="FluxMots" />
+
+        <!-- Open Graph -->
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="FluxMots - Fluence de lecture" />
+        <meta
+            property="og:description"
+            content="Application de fluence de lecture pour enseignants du premier degré"
+        />
+        <meta property="og:url" content="https://fluxmots.micetf.fr/" />
+        <meta property="og:site_name" content="FluxMots" />
+
+        <!-- Styles inline critiques pour éviter FOUC -->
+        <style>
+            /* Styles critiques inline pour le chargement */
+            body {
+                font-family:
+                    "Segoe UI",
+                    system-ui,
+                    -apple-system,
+                    sans-serif;
+                margin: 0;
+                padding: 0;
+                background-color: #f9fafb;
+                color: #1f2937;
+                line-height: 1.6;
+            }
+
+            #root {
+                min-height: 100vh;
+            }
+
+            /* Loader initial */
+            .initial-loader {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: #ffffff;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                z-index: 9999;
+            }
+
+            .loader-spinner {
+                width: 40px;
+                height: 40px;
+                border: 4px solid #e5e7eb;
+                border-top: 4px solid #4a90e2;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            }
+
+            .loader-text {
+                margin-top: 16px;
+                font-size: 16px;
+                font-weight: 500;
+                color: #6b7280;
+            }
+
+            @keyframes spin {
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(360deg);
+                }
+            }
+
+            /* Masquer le loader une fois l'app chargée */
+            .app-loaded .initial-loader {
+                display: none;
+            }
+
+            /* Styles pour les navigateurs qui ne supportent pas JS */
+            .no-js .initial-loader {
+                display: none;
+            }
+
+            .no-js .no-js-message {
+                display: block;
+                text-align: center;
+                padding: 40px 20px;
+                background: #fef3c7;
+                border: 1px solid #f59e0b;
+                margin: 20px;
+                border-radius: 8px;
+            }
+
+            .no-js-message {
+                display: none;
+            }
+        </style>
+    </head>
+
+    <body class="no-js">
+        <!-- Loader initial -->
+        <div class="initial-loader">
+            <div class="loader-spinner"></div>
+            <div class="loader-text">Chargement de FluxMots...</div>
+        </div>
+
+        <!-- Message pour les navigateurs sans JavaScript -->
+        <div class="no-js-message">
+            <h2>JavaScript requis</h2>
+            <p>
+                FluxMots nécessite JavaScript pour fonctionner. Veuillez activer
+                JavaScript dans votre navigateur.
+            </p>
+            <p>
+                Pour plus d'informations, consultez
+                <a href="https://micetf.fr/contact">notre page de contact</a>.
+            </p>
+        </div>
+
+        <!-- Conteneur principal de l'application -->
+        <div id="root"></div>
+
+        <!-- Script pour gérer le chargement -->
+        <script>
+            // Marquer que JS est activé
+            document.body.classList.remove("no-js");
+
+            // Masquer le loader une fois l'app chargée
+            window.addEventListener("load", function () {
+                setTimeout(function () {
+                    document.body.classList.add("app-loaded");
+                }, 100);
+            });
+
+            // Gestion d'erreur de chargement
+            window.addEventListener("error", function (e) {
+                console.error("Erreur de chargement:", e);
+                const loaderText = document.querySelector(".loader-text");
+                if (loaderText) {
+                    loaderText.textContent = "Erreur de chargement...";
+                }
+            });
+        </script>
+
+        <!-- Chargement du script principal -->
+        <script type="module" src="/src/main.jsx"></script>
+
+        <!-- Fallback pour les navigateurs qui ne supportent pas les modules -->
+        <script nomodule>
+            const loaderText = document.querySelector(".loader-text");
+            const noJsMessage = document.querySelector(".no-js-message");
+            if (loaderText) loaderText.textContent = "Navigateur non supporté";
+            if (noJsMessage) noJsMessage.style.display = "block";
+        </script>
+    </body>
+</html>
