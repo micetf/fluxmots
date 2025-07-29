@@ -1,6 +1,6 @@
 // src/App.jsx
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { Navbar } from "@micetf/ui";
 import WordDisplay from "@components/WordDisplay/WordDisplay";
 import Controls from "@components/Controls/Controls";
@@ -17,7 +17,7 @@ import { getPerformanceRating } from "@utils/performance";
 import "@micetf/ui/index.css";
 
 /**
- * Composant principal de l'application FluxMots
+ * Composant principal de l'application FluxMots - Version optimisée
  */
 function App() {
     // État des paramètres et persistance
@@ -40,7 +40,7 @@ function App() {
     const [showHelp, setShowHelp] = useState(false);
     const [lastSessionStats, setLastSessionStats] = useState(null);
 
-    // Récupération de la liste sélectionnée
+    // Récupération de la liste sélectionnée - MÉMORISÉE
     const getCurrentList = useCallback(() => {
         // Vérifier d'abord dans les listes officielles
         const officialList = getListById(settings.selectedList);
@@ -60,17 +60,85 @@ function App() {
         return WORD_LISTS.CE1_OFFICIELLE;
     }, [settings.selectedList, customLists]);
 
-    const currentList = getCurrentList();
-    const currentWords = currentList?.words || [];
+    const currentList = useMemo(() => getCurrentList(), [getCurrentList]);
+    const currentWords = useMemo(() => currentList?.words || [], [currentList]);
 
-    // Hook principal de gestion de la fluence
+    // Debug : vérification que les mots sont bien chargés
+    useEffect(() => {
+        console.log(
+            "Mots actuels:",
+            currentWords.length,
+            "Liste:",
+            currentList?.name
+        );
+    }, [currentWords, currentList]);
+
+    // Hook principal de gestion de la fluence avec dependencies explicites
     const wordFlow = useWordFlow(
         currentWords,
         settings.tempo,
         settings.displayMode
     );
 
-    // Gestion du plein écran
+    // Handlers stables pour les paramètres - MÉMORISÉS
+    const handleListChange = useCallback(
+        (listId) => {
+            console.log("Changement de liste:", listId);
+            updateSetting("selectedList", listId);
+        },
+        [updateSetting]
+    );
+
+    const handleDisplayModeChange = useCallback(
+        (mode) => {
+            console.log("Changement de mode:", mode);
+            updateSetting("displayMode", mode);
+        },
+        [updateSetting]
+    );
+
+    const handleFontSizeChange = useCallback(
+        (size) => {
+            updateSetting("fontSize", size);
+        },
+        [updateSetting]
+    );
+
+    const handleShowProgressChange = useCallback(
+        (show) => {
+            updateSetting("showProgress", show);
+        },
+        [updateSetting]
+    );
+
+    const handleTempoChange = useCallback(
+        (tempo) => {
+            console.log("Changement de tempo:", tempo);
+            updateSetting("tempo", tempo);
+        },
+        [updateSetting]
+    );
+
+    // Handlers des listes personnalisées - STABLES
+    const handleCustomListAdd = useCallback(
+        (listData) => {
+            const listId = addCustomList(listData);
+            updateSetting("selectedList", listId);
+        },
+        [addCustomList, updateSetting]
+    );
+
+    const handleCustomListDelete = useCallback(
+        (listId) => {
+            deleteCustomList(listId);
+            if (settings.selectedList === listId) {
+                updateSetting("selectedList", "ce1_officielle");
+            }
+        },
+        [deleteCustomList, settings.selectedList, updateSetting]
+    );
+
+    // Gestion du plein écran - STABLES
     const enterFullscreen = useCallback(() => {
         const elem = document.documentElement;
         if (elem.requestFullscreen) {
@@ -92,6 +160,15 @@ function App() {
             document.msExitFullscreen();
         }
         setIsFullscreen(false);
+    }, []);
+
+    // Handlers d'interface - STABLES
+    const toggleSettings = useCallback(() => {
+        setShowSettings((prev) => !prev);
+    }, []);
+
+    const toggleHelp = useCallback(() => {
+        setShowHelp((prev) => !prev);
     }, []);
 
     // Écoute des changements de plein écran
@@ -130,63 +207,8 @@ function App() {
         }
     }, [wordFlow.isFinished, wordFlow.stats]);
 
-    // Handlers des paramètres
-    const handleListChange = useCallback(
-        (listId) => {
-            updateSetting("selectedList", listId);
-        },
-        [updateSetting]
-    );
-
-    const handleDisplayModeChange = useCallback(
-        (mode) => {
-            updateSetting("displayMode", mode);
-        },
-        [updateSetting]
-    );
-
-    const handleFontSizeChange = useCallback(
-        (size) => {
-            updateSetting("fontSize", size);
-        },
-        [updateSetting]
-    );
-
-    const handleShowProgressChange = useCallback(
-        (show) => {
-            updateSetting("showProgress", show);
-        },
-        [updateSetting]
-    );
-
-    const handleTempoChange = useCallback(
-        (tempo) => {
-            updateSetting("tempo", tempo);
-        },
-        [updateSetting]
-    );
-
-    // Handlers des listes personnalisées
-    const handleCustomListAdd = useCallback(
-        (listData) => {
-            const listId = addCustomList(listData);
-            updateSetting("selectedList", listId);
-        },
-        [addCustomList, updateSetting]
-    );
-
-    const handleCustomListDelete = useCallback(
-        (listId) => {
-            deleteCustomList(listId);
-            if (settings.selectedList === listId) {
-                updateSetting("selectedList", "ce1_officielle");
-            }
-        },
-        [deleteCustomList, settings.selectedList, updateSetting]
-    );
-
-    // Composant des statistiques de fin de session
-    const SessionStats = () => {
+    // Composant des statistiques de fin de session - MÉMORISÉ
+    const SessionStats = useMemo(() => {
         if (!lastSessionStats) return null;
 
         const rating = getPerformanceRating(
@@ -268,10 +290,10 @@ function App() {
                 </div>
             </div>
         );
-    };
+    }, [lastSessionStats, wordFlow.play]);
 
-    // Composant d'aide
-    const HelpModal = () => {
+    // Composant d'aide - MÉMORISÉ
+    const HelpModal = useMemo(() => {
         if (!showHelp) return null;
 
         return (
@@ -280,7 +302,7 @@ function App() {
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="text-xl font-bold">Aide - FluxMots</h2>
                         <button
-                            onClick={() => setShowHelp(false)}
+                            onClick={toggleHelp}
                             className="text-gray-500 hover:text-gray-700"
                         >
                             <span className="text-2xl">×</span>
@@ -350,7 +372,7 @@ function App() {
                 </div>
             </div>
         );
-    };
+    }, [showHelp, toggleHelp]);
 
     // Affichage de chargement
     if (settingsLoading || customListsLoading) {
@@ -390,7 +412,7 @@ function App() {
                     Quitter
                 </button>
 
-                <SessionStats />
+                {SessionStats}
             </div>
         );
     }
@@ -402,7 +424,7 @@ function App() {
                 breadcrumb={MICETF_CONFIG.breadcrumb}
                 subtitle={MICETF_CONFIG.subtitle}
                 showHelp={MICETF_CONFIG.showHelp}
-                onHelpClick={() => setShowHelp(true)}
+                onHelpClick={toggleHelp}
                 showSearch={MICETF_CONFIG.showSearch}
                 baseUrl={MICETF_CONFIG.baseUrl}
                 paypalId={MICETF_CONFIG.paypalId}
@@ -417,7 +439,8 @@ function App() {
                         </h1>
                         <p className="text-gray-600">
                             Entraînement à la fluence de lecture •{" "}
-                            {currentList?.name || "Aucune liste"}
+                            {currentList?.name || "Aucune liste"} •{" "}
+                            {currentWords.length} mots
                         </p>
                     </div>
 
@@ -454,7 +477,7 @@ function App() {
                             />
 
                             <button
-                                onClick={() => setShowSettings(!showSettings)}
+                                onClick={toggleSettings}
                                 className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
                             >
                                 <span className="text-lg">⚙️</span>
@@ -486,8 +509,8 @@ function App() {
                 </div>
             </main>
 
-            <HelpModal />
-            <SessionStats />
+            {HelpModal}
+            {SessionStats}
         </div>
     );
 }

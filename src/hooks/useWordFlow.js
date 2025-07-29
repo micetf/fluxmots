@@ -1,13 +1,11 @@
 // src/hooks/useWordFlow.js
+// Version finale stable - Protection contre StrictMode et conditions de course
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { READING_STATES, DISPLAY_MODES } from "@data/constants";
 import { shuffleArray } from "@utils/shuffle";
 import { calculateFluentMetrics } from "@utils/performance";
 
-/**
- * Hook principal pour la gestion de la fluence de lecture
- */
 export const useWordFlow = (
     words = [],
     tempo = 1.2,
@@ -21,134 +19,227 @@ export const useWordFlow = (
     const [startTime, setStartTime] = useState(null);
     const [endTime, setEndTime] = useState(null);
 
-    // Références pour les timers
+    // Refs pour éviter les conditions de course
     const timeoutRef = useRef(null);
+    const stateRef = useRef(READING_STATES.IDLE);
     const currentIndexRef = useRef(0);
+    const displayWordsRef = useRef([]);
+    const tempoRef = useRef(tempo);
+    const startTimeRef = useRef(null);
 
-    // Prépare la liste des mots selon le mode d'affichage
-    const prepareWords = useCallback(() => {
-        if (!words.length) return [];
+    console.log("🔄 useWordFlow render:", {
+        wordsLength: words.length,
+        state,
+        currentIndex: currentWordIndex,
+        totalWords: displayWords.length,
+        tempo,
+    });
 
-        if (displayMode === DISPLAY_MODES.RANDOM) {
-            return shuffleArray([...words]);
-        }
-        return [...words];
-    }, [words, displayMode]);
+    // Synchronisation des refs avec les états
+    useEffect(() => {
+        stateRef.current = state;
+    }, [state]);
+    useEffect(() => {
+        currentIndexRef.current = currentWordIndex;
+    }, [currentWordIndex]);
+    useEffect(() => {
+        displayWordsRef.current = displayWords;
+    }, [displayWords]);
+    useEffect(() => {
+        tempoRef.current = tempo;
+    }, [tempo]);
+    useEffect(() => {
+        startTimeRef.current = startTime;
+    }, [startTime]);
 
-    // Initialise ou réinitialise la session
-    const initializeSession = useCallback(() => {
-        const preparedWords = prepareWords();
-        setDisplayWords(preparedWords);
-        setCurrentWordIndex(0);
-        currentIndexRef.current = 0;
-        setProgress(0);
-        setState(READING_STATES.IDLE);
-        setStartTime(null);
-        setEndTime(null);
-
-        // Nettoyer les timers
+    // Fonction de nettoyage sécurisée
+    const clearTimer = useCallback(() => {
         if (timeoutRef.current) {
+            console.log("🧹 Nettoyage timer");
             clearTimeout(timeoutRef.current);
             timeoutRef.current = null;
         }
-    }, [prepareWords]);
+    }, []);
 
-    // Avance au mot suivant
-    const advanceWord = useCallback(() => {
-        const nextIndex = currentIndexRef.current + 1;
+    // Préparation des mots - FONCTION PURE
+    const prepareWords = useCallback((inputWords, mode) => {
+        if (!Array.isArray(inputWords) || inputWords.length === 0) {
+            console.log("📝 prepareWords: tableau vide");
+            return [];
+        }
 
-        if (nextIndex >= displayWords.length) {
-            // Fin de la liste
-            setState(READING_STATES.FINISHED);
-            setEndTime(new Date());
-            setProgress(100);
+        const prepared =
+            mode === DISPLAY_MODES.RANDOM
+                ? shuffleArray([...inputWords])
+                : [...inputWords];
+
+        console.log("📝 prepareWords:", prepared.length, "mots en mode", mode);
+        return prepared;
+    }, []);
+
+    // Fonction d'avancement - STABLE et SÉCURISÉE
+    const advanceToNextWord = useCallback(() => {
+        // Vérifications de sécurité
+        if (stateRef.current !== READING_STATES.PLAYING) {
+            console.log("⏸️ Arrêt - plus en lecture");
+            clearTimer();
             return;
         }
 
-        currentIndexRef.current = nextIndex;
-        setCurrentWordIndex(nextIndex);
+        const nextIndex = currentIndexRef.current + 1;
+        const totalWords = displayWordsRef.current.length;
 
-        // Calculer et mettre à jour le progrès
-        const newProgress = Math.round((nextIndex / displayWords.length) * 100);
+        console.log(
+            "➡️ Avancement:",
+            currentIndexRef.current,
+            "->",
+            nextIndex,
+            "/",
+            totalWords
+        );
+
+        // Vérifier la fin AVANT de modifier l'état
+        if (nextIndex >= totalWords) {
+            console.log("🏁 Fin de la liste atteinte");
+            setState(READING_STATES.FINISHED);
+            setEndTime(new Date());
+            setProgress(100);
+            clearTimer();
+            return;
+        }
+
+        // Mettre à jour l'index et le progrès
+        setCurrentWordIndex(nextIndex);
+        const newProgress = Math.round((nextIndex / totalWords) * 100);
         setProgress(newProgress);
 
-        // Programmer le mot suivant
-        timeoutRef.current = setTimeout(advanceWord, tempo * 1000);
-    }, [displayWords.length, tempo]);
+        // Programmer le mot suivant SEULEMENT si on est encore en lecture
+        clearTimer();
+        if (stateRef.current === READING_STATES.PLAYING) {
+            console.log("⏱️ Prochain mot dans", tempoRef.current, "secondes");
+            timeoutRef.current = setTimeout(() => {
+                // Double vérification avant d'avancer
+                if (stateRef.current === READING_STATES.PLAYING) {
+                    advanceToNextWord();
+                }
+            }, tempoRef.current * 1000);
+        }
+    }, [clearTimer]);
 
-    // Démarre la lecture
+    // Contrôles principaux - STABLES
     const play = useCallback(() => {
-        if (displayWords.length === 0) return;
+        console.log("▶️ Play demandé, état actuel:", stateRef.current);
 
-        if (state === READING_STATES.IDLE) {
-            setStartTime(new Date());
+        const currentWords = displayWordsRef.current;
+        if (currentWords.length === 0) {
+            console.warn("⚠️ Aucun mot à jouer");
+            return;
         }
 
+        if (stateRef.current === READING_STATES.PLAYING) {
+            console.log("⚠️ Déjà en lecture");
+            return;
+        }
+
+        console.log("▶️ Démarrage avec", currentWords.length, "mots");
+
+        // Démarrer le chronomètre si nécessaire
+        if (stateRef.current === READING_STATES.IDLE) {
+            const now = new Date();
+            setStartTime(now);
+            console.log("⏱️ Chronomètre démarré");
+        }
+
+        // Changer l'état
         setState(READING_STATES.PLAYING);
 
-        // Commencer l'avancement automatique
-        timeoutRef.current = setTimeout(advanceWord, tempo * 1000);
-    }, [state, displayWords.length, tempo, advanceWord]);
+        // Démarrer l'avancement avec délai initial
+        clearTimer();
+        console.log("⏱️ Premier avancement dans", tempoRef.current, "secondes");
+        timeoutRef.current = setTimeout(() => {
+            if (stateRef.current === READING_STATES.PLAYING) {
+                advanceToNextWord();
+            }
+        }, tempoRef.current * 1000);
+    }, [advanceToNextWord, clearTimer]);
 
-    // Met en pause la lecture
     const pause = useCallback(() => {
-        if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-            timeoutRef.current = null;
-        }
+        console.log("⏸️ Pause");
+        clearTimer();
         setState(READING_STATES.PAUSED);
-    }, []);
+    }, [clearTimer]);
 
-    // Arrête la lecture et remet à zéro
     const stop = useCallback(() => {
-        if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-            timeoutRef.current = null;
-        }
+        console.log("⏹️ Stop");
+        clearTimer();
         setCurrentWordIndex(0);
-        currentIndexRef.current = 0;
         setProgress(0);
         setState(READING_STATES.IDLE);
         setStartTime(null);
         setEndTime(null);
-    }, []);
+    }, [clearTimer]);
 
-    // Mélange à nouveau les mots
     const shuffle = useCallback(() => {
-        if (displayMode === DISPLAY_MODES.RANDOM) {
-            const shuffledWords = shuffleArray([...words]);
-            setDisplayWords(shuffledWords);
+        if (displayMode === DISPLAY_MODES.RANDOM && words.length > 0) {
+            console.log("🔀 Mélange des mots");
+            const shuffled = shuffleArray([...words]);
+            setDisplayWords(shuffled);
             stop();
         }
     }, [displayMode, words, stop]);
 
-    // Calcule les statistiques de performance
-    const getStats = useCallback(() => {
-        if (!startTime || !endTime || !displayWords.length) {
-            return null;
-        }
-
-        return calculateFluentMetrics(
-            startTime,
-            endTime,
-            displayWords.length,
-            tempo
-        );
-    }, [startTime, endTime, displayWords.length, tempo]);
-
-    // Effet pour initialiser/réinitialiser quand les mots changent
+    // Initialisation - PROTECTION contre les changements inutiles
     useEffect(() => {
-        initializeSession();
-    }, [initializeSession]);
+        console.log("🔄 Vérification initialisation:", {
+            wordsLength: words.length,
+            displayMode,
+            currentDisplayWords: displayWords.length,
+        });
 
-    // Nettoyage des timers
+        // Préparer les nouveaux mots
+        const prepared = prepareWords(words, displayMode);
+
+        // Ne réinitialiser que si quelque chose a vraiment changé
+        if (JSON.stringify(prepared) !== JSON.stringify(displayWords)) {
+            console.log("🔄 Initialisation nécessaire");
+
+            // Nettoyer l'état précédent
+            clearTimer();
+
+            // Mettre à jour l'état
+            setDisplayWords(prepared);
+            setCurrentWordIndex(0);
+            setProgress(0);
+            setState(READING_STATES.IDLE);
+            setStartTime(null);
+            setEndTime(null);
+
+            console.log("✅ Initialisation terminée:", prepared.length, "mots");
+        } else {
+            console.log("ℹ️ Pas de changement, initialisation ignorée");
+        }
+    }, [words, displayMode, prepareWords, clearTimer, displayWords]);
+
+    // Nettoyage à la destruction
     useEffect(() => {
         return () => {
+            console.log("🧹 Nettoyage useWordFlow complet");
             if (timeoutRef.current) {
                 clearTimeout(timeoutRef.current);
             }
         };
     }, []);
+
+    // Calcul des statistiques
+    const stats =
+        startTimeRef.current && endTime && displayWords.length > 0
+            ? calculateFluentMetrics(
+                  startTimeRef.current,
+                  endTime,
+                  displayWords.length,
+                  tempo
+              )
+            : null;
 
     return {
         // État actuel
@@ -159,7 +250,7 @@ export const useWordFlow = (
         progress,
 
         // Statistiques
-        stats: getStats(),
+        stats,
 
         // Contrôles
         play,
@@ -167,7 +258,7 @@ export const useWordFlow = (
         stop,
         shuffle,
 
-        // Informations
+        // États dérivés
         isPlaying: state === READING_STATES.PLAYING,
         isPaused: state === READING_STATES.PAUSED,
         isFinished: state === READING_STATES.FINISHED,

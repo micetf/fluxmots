@@ -46,13 +46,13 @@ export default {
                 reading: ["Georgia", "Times New Roman", "serif"],
             },
             fontSize: {
-                // Tailles pour l'affichage des mots
-                "word-xs": ["2rem", { lineHeight: "2.5rem" }],
-                "word-sm": ["3rem", { lineHeight: "3.5rem" }],
-                "word-md": ["4rem", { lineHeight: "4.5rem" }],
-                "word-lg": ["6rem", { lineHeight: "6.5rem" }],
-                "word-xl": ["8rem", { lineHeight: "8.5rem" }],
-                "word-2xl": ["12rem", { lineHeight: "12.5rem" }],
+                // Tailles pour l'affichage des mots - CORRIGÉES
+                "word-xs": ["2rem", { lineHeight: "2.2rem" }], // 32px
+                "word-sm": ["3rem", { lineHeight: "3.2rem" }], // 48px
+                "word-md": ["4rem", { lineHeight: "4.2rem" }], // 64px
+                "word-lg": ["6rem", { lineHeight: "6.2rem" }], // 96px
+                "word-xl": ["8rem", { lineHeight: "8.2rem" }], // 128px
+                "word-2xl": ["12rem", { lineHeight: "12.2rem" }], // 192px
             },
             animation: {
                 "fade-in": "fadeIn 0.3s ease-in-out",
@@ -91,12 +91,16 @@ export default {
         },
     },
     plugins: [],
-    // Classes de sécurité pour l'affichage dynamique
+    // Classes de sécurité pour l'affichage dynamique - ÉTENDUES
     safelist: [
+        // Patterns pour les classes dynamiques
         {
-            pattern: /^(text-word|font-reading|animate-|text-flux|bg-flux)/,
+            pattern: /^(text-word|font-reading|animate-|text-flux|bg-flux)-.*/,
         },
-        // Classes pour les tailles dynamiques
+        {
+            pattern: /^(h|w)-\d+$/,
+        },
+        // Classes spécifiques pour les tailles de mots
         "text-word-xs",
         "text-word-sm",
         "text-word-md",
@@ -106,13 +110,37 @@ export default {
         // Classes pour les animations
         "animate-word-in",
         "animate-word-out",
+        "animate-fade-in",
+        "animate-slide-in",
         // Classes couleurs flux
         "text-flux-primary",
+        "text-flux-secondary",
         "bg-flux-primary",
         "bg-flux-secondary",
         "hover:bg-flux-secondary",
         "border-flux-primary",
+        "hover:border-flux-primary",
         "bg-flux-gray-50",
         "bg-flux-gray-100",
+        "bg-flux-gray-200",
+        "text-flux-gray-600",
+        "text-flux-gray-700",
+        "text-flux-gray-800",
+        // Classes pour les états
+        "opacity-50",
+        "opacity-100",
+        "scale-95",
+        "scale-100",
+        "transform",
+        "transition-all",
+        "duration-300",
+        "ease-in-out",
+        // Classes pour l'affichage responsive
+        "min-h-screen",
+        "min-h-[400px]",
+        "font-bold",
+        "font-reading",
+        "text-center",
+        "select-none",
     ],
 };

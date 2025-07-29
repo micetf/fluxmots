@@ -177,22 +177,22 @@ export const WORD_LISTS = {
 };
 
 /**
- * Métadonnées des listes
+ * Métadonnées des listes - EXPORT AJOUTÉ
  */
 export const LIST_METADATA = {
-    CE1_OFFICIELLE: {
+    ce1_officielle: {
         source: "Évaluations nationales CE1 2024",
         reference: "DEPP/CSEN/DGESCO",
         date: "2024",
         validated: true,
     },
-    MI_CP: {
+    mi_cp: {
         source: "Adaptation MiCetF.fr",
         reference: "Mots fréquents Éduscol",
         date: "2024",
         validated: true,
     },
-    FIN_CP: {
+    fin_cp: {
         source: "Progression MiCetF.fr",
         reference: "Transition CP-CE1",
         date: "2024",

@@ -49,18 +49,26 @@ const WordDisplay = ({
         }
     }, [currentWord, state, currentIndex, onWordChange]);
 
-    // Mapping des tailles de police
+    // Mapping des tailles de police - CORRIGÉ
     const getFontSizeClass = () => {
-        const fontSizeMap = {
-            [FONT_SIZES.XS]: isFullscreen ? "text-word-sm" : "text-word-xs",
-            [FONT_SIZES.SM]: isFullscreen ? "text-word-md" : "text-word-sm",
-            [FONT_SIZES.MD]: isFullscreen ? "text-word-lg" : "text-word-md",
-            [FONT_SIZES.LG]: isFullscreen ? "text-word-xl" : "text-word-lg",
-            [FONT_SIZES.XL]: isFullscreen ? "text-word-2xl" : "text-word-xl",
-            [FONT_SIZES.XXL]: "text-word-2xl",
-        };
+        const sizeMultiplier = isFullscreen ? 1.2 : 1;
 
-        return fontSizeMap[fontSize] || "text-word-lg";
+        switch (fontSize) {
+            case FONT_SIZES.XS:
+                return isFullscreen ? "text-6xl" : "text-4xl"; // ~2rem base
+            case FONT_SIZES.SM:
+                return isFullscreen ? "text-7xl" : "text-5xl"; // ~3rem base
+            case FONT_SIZES.MD:
+                return isFullscreen ? "text-8xl" : "text-6xl"; // ~4rem base
+            case FONT_SIZES.LG:
+                return isFullscreen ? "text-9xl" : "text-7xl"; // ~6rem base
+            case FONT_SIZES.XL:
+                return isFullscreen ? "text-[10rem]" : "text-8xl"; // ~8rem base
+            case FONT_SIZES.XXL:
+                return "text-[12rem]"; // ~12rem
+            default:
+                return isFullscreen ? "text-9xl" : "text-7xl";
+        }
     };
 
     // Classes CSS pour l'affichage
@@ -73,8 +81,11 @@ const WordDisplay = ({
         "transition-all",
         "duration-300",
         "ease-in-out",
+        "leading-tight",
         // Animation lors du changement
-        isAnimating ? "opacity-50 scale-95" : "opacity-100 scale-100",
+        isAnimating
+            ? "opacity-50 transform scale-95"
+            : "opacity-100 transform scale-100",
         // Couleur selon l'état
         state === READING_STATES.PLAYING
             ? "text-flux-primary"
@@ -94,7 +105,8 @@ const WordDisplay = ({
         "h-full",
         "relative",
         "overflow-hidden",
-        isFullscreen ? "min-h-screen bg-white" : "min-h-[400px]",
+        "px-4",
+        isFullscreen ? "min-h-screen bg-white" : "min-h-[400px] bg-gray-50",
     ].join(" ");
 
     // Barre de progression
@@ -109,7 +121,7 @@ const WordDisplay = ({
                 circumference - (progress / 100) * circumference;
 
             return (
-                <div className="absolute top-8 right-8">
+                <div className="absolute top-8 right-8 z-10">
                     <div className="relative w-16 h-16">
                         <svg
                             className="w-16 h-16 -rotate-90"
@@ -148,7 +160,7 @@ const WordDisplay = ({
         } else {
             // Barre de progression linéaire
             return (
-                <div className="absolute bottom-0 left-0 w-full">
+                <div className="absolute bottom-0 left-0 w-full bg-white">
                     <div className="bg-gray-200 h-2">
                         <div
                             className="bg-flux-primary h-2 transition-all duration-300 ease-out"
@@ -200,7 +212,7 @@ const WordDisplay = ({
 
         return (
             <div
-                className={`absolute top-8 left-8 px-4 py-2 rounded-lg ${stateInfo.bgColor}`}
+                className={`absolute top-8 left-8 px-4 py-2 rounded-lg z-10 ${stateInfo.bgColor}`}
             >
                 <div
                     className={`flex items-center gap-2 text-sm font-medium ${stateInfo.color}`}
@@ -233,7 +245,7 @@ const WordDisplay = ({
             <StateIndicator />
 
             {/* Zone d'affichage principal du mot */}
-            <div className="flex-1 flex items-center justify-center px-8">
+            <div className="flex-1 flex items-center justify-center px-8 w-full">
                 {displayWord ? (
                     <div
                         ref={wordRef}
@@ -241,11 +253,16 @@ const WordDisplay = ({
                         role="img"
                         aria-label={`Mot actuel: ${displayWord}`}
                         tabIndex={-1}
+                        style={{
+                            wordBreak: "break-word",
+                            overflowWrap: "break-word",
+                            maxWidth: "100%",
+                        }}
                     >
                         {displayWord}
                     </div>
                 ) : (
-                    <div className="text-center text-gray-500">
+                    <div className="text-center text-gray-500 px-4">
                         <div className="text-xl mb-4">{getStatusMessage()}</div>
                         {state === READING_STATES.IDLE && totalWords > 0 && (
                             <div className="text-sm text-gray-400">
@@ -261,7 +278,7 @@ const WordDisplay = ({
 
             {/* Informations de tempo en plein écran */}
             {isFullscreen && state === READING_STATES.PLAYING && (
-                <div className="absolute bottom-8 left-8 text-sm text-gray-600 bg-white bg-opacity-90 px-3 py-2 rounded">
+                <div className="absolute bottom-8 left-8 text-sm text-gray-600 bg-white bg-opacity-90 px-3 py-2 rounded z-10">
                     {Math.round(60 / tempo)} mots/min
                 </div>
             )}

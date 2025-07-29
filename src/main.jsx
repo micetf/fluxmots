@@ -58,12 +58,10 @@ document.addEventListener("DOMContentLoaded", () => {
 // Gestion des erreurs globales
 window.addEventListener("error", (event) => {
     console.error("Erreur globale:", event.error);
-    // Ici vous pourriez ajouter un système de reporting d'erreurs
 });
 
 window.addEventListener("unhandledrejection", (event) => {
     console.error("Promise rejetée:", event.reason);
-    // Ici vous pourriez ajouter un système de reporting d'erreurs
 });
 
 // Performance monitoring
@@ -71,12 +69,8 @@ if (window.performance && window.performance.mark) {
     window.performance.mark("app-start");
 }
 
-// Rendu de l'application
-ReactDOM.createRoot(document.getElementById("root")).render(
-    <React.StrictMode>
-        <App />
-    </React.StrictMode>
-);
+// Rendu de l'application - SANS React.StrictMode
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
 
 // Mesure de performance après rendu
 if (window.performance && window.performance.mark) {
