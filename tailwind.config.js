@@ -29,24 +29,37 @@ export default {
                     success: "#10b981",
                     warning: "#f59e0b",
                     error: "#ef4444",
+                    "gray-50": "#f9fafb",
+                    "gray-100": "#f3f4f6",
+                    "gray-200": "#e5e7eb",
+                    "gray-300": "#d1d5db",
+                    "gray-400": "#9ca3af",
+                    "gray-500": "#6b7280",
+                    "gray-600": "#4b5563",
+                    "gray-700": "#374151",
+                    "gray-800": "#1f2937",
+                    "gray-900": "#111827",
                 },
             },
             fontFamily: {
                 display: ["Segoe UI", "system-ui", "sans-serif"],
-                reading: ["Georgia", "Times New Roman", "serif"], // Police pour l'affichage des mots
+                reading: ["Georgia", "Times New Roman", "serif"],
             },
             fontSize: {
-                "word-xs": ["2rem", "2.5rem"],
-                "word-sm": ["3rem", "3.5rem"],
-                "word-md": ["4rem", "4.5rem"],
-                "word-lg": ["6rem", "6.5rem"],
-                "word-xl": ["8rem", "8.5rem"],
-                "word-2xl": ["12rem", "12.5rem"],
+                // Tailles pour l'affichage des mots
+                "word-xs": ["2rem", { lineHeight: "2.5rem" }],
+                "word-sm": ["3rem", { lineHeight: "3.5rem" }],
+                "word-md": ["4rem", { lineHeight: "4.5rem" }],
+                "word-lg": ["6rem", { lineHeight: "6.5rem" }],
+                "word-xl": ["8rem", { lineHeight: "8.5rem" }],
+                "word-2xl": ["12rem", { lineHeight: "12.5rem" }],
             },
             animation: {
                 "fade-in": "fadeIn 0.3s ease-in-out",
                 "slide-in": "slideIn 0.2s ease-out",
                 "pulse-slow": "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+                "word-in": "wordFadeIn 0.3s ease-out",
+                "word-out": "wordFadeOut 0.2s ease-in",
             },
             keyframes: {
                 fadeIn: {
@@ -57,6 +70,23 @@ export default {
                     "0%": { transform: "translateY(-10px)", opacity: "0" },
                     "100%": { transform: "translateY(0)", opacity: "1" },
                 },
+                wordFadeIn: {
+                    "0%": {
+                        opacity: "0",
+                        transform: "scale(0.95) translateY(-10px)",
+                    },
+                    "100%": {
+                        opacity: "1",
+                        transform: "scale(1) translateY(0)",
+                    },
+                },
+                wordFadeOut: {
+                    "0%": { opacity: "1", transform: "scale(1) translateY(0)" },
+                    "100%": {
+                        opacity: "0",
+                        transform: "scale(0.95) translateY(10px)",
+                    },
+                },
             },
         },
     },
@@ -64,7 +94,25 @@ export default {
     // Classes de sécurité pour l'affichage dynamique
     safelist: [
         {
-            pattern: /^(text-word|font-reading|animate-)/,
+            pattern: /^(text-word|font-reading|animate-|text-flux|bg-flux)/,
         },
+        // Classes pour les tailles dynamiques
+        "text-word-xs",
+        "text-word-sm",
+        "text-word-md",
+        "text-word-lg",
+        "text-word-xl",
+        "text-word-2xl",
+        // Classes pour les animations
+        "animate-word-in",
+        "animate-word-out",
+        // Classes couleurs flux
+        "text-flux-primary",
+        "bg-flux-primary",
+        "bg-flux-secondary",
+        "hover:bg-flux-secondary",
+        "border-flux-primary",
+        "bg-flux-gray-50",
+        "bg-flux-gray-100",
     ],
 };

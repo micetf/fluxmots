@@ -6,7 +6,6 @@ import { READING_STATES, FONT_SIZES } from "@data/constants";
 
 /**
  * Composant principal d'affichage des mots en fluence
- * Optimisé pour la lisibilité et l'accessibilité
  */
 const WordDisplay = ({
     currentWord = "",
@@ -34,12 +33,10 @@ const WordDisplay = ({
         ) {
             setIsAnimating(true);
 
-            // Déclencher l'animation d'entrée
             const timer = setTimeout(() => {
                 setDisplayWord(currentWord);
                 setIsAnimating(false);
 
-                // Callback optionnel pour notifier le changement
                 if (onWordChange) {
                     onWordChange(currentWord, currentIndex);
                 }
@@ -52,28 +49,18 @@ const WordDisplay = ({
         }
     }, [currentWord, state, currentIndex, onWordChange]);
 
-    // Calcul de la taille de police responsive
+    // Mapping des tailles de police
     const getFontSizeClass = () => {
-        if (isFullscreen) {
-            // En plein écran, augmenter la taille
-            switch (fontSize) {
-                case FONT_SIZES.XS:
-                    return "text-word-sm";
-                case FONT_SIZES.SM:
-                    return "text-word-md";
-                case FONT_SIZES.MD:
-                    return "text-word-lg";
-                case FONT_SIZES.LG:
-                    return "text-word-xl";
-                case FONT_SIZES.XL:
-                    return "text-word-2xl";
-                case FONT_SIZES.XXL:
-                    return "text-word-2xl";
-                default:
-                    return "text-word-xl";
-            }
-        }
-        return `text-${fontSize}`;
+        const fontSizeMap = {
+            [FONT_SIZES.XS]: isFullscreen ? "text-word-sm" : "text-word-xs",
+            [FONT_SIZES.SM]: isFullscreen ? "text-word-md" : "text-word-sm",
+            [FONT_SIZES.MD]: isFullscreen ? "text-word-lg" : "text-word-md",
+            [FONT_SIZES.LG]: isFullscreen ? "text-word-xl" : "text-word-lg",
+            [FONT_SIZES.XL]: isFullscreen ? "text-word-2xl" : "text-word-xl",
+            [FONT_SIZES.XXL]: "text-word-2xl",
+        };
+
+        return fontSizeMap[fontSize] || "text-word-lg";
     };
 
     // Classes CSS pour l'affichage
@@ -110,7 +97,7 @@ const WordDisplay = ({
         isFullscreen ? "min-h-screen bg-white" : "min-h-[400px]",
     ].join(" ");
 
-    // Barre de progression circulaire ou linéaire
+    // Barre de progression
     const ProgressIndicator = () => {
         if (!showProgress || totalWords <= 1) return null;
 
@@ -178,55 +165,54 @@ const WordDisplay = ({
 
     // Indicateur d'état
     const StateIndicator = () => {
-        if (isFullscreen && state !== READING_STATES.IDLE) {
-            const getStateInfo = () => {
-                switch (state) {
-                    case READING_STATES.PLAYING:
-                        return {
-                            icon: "▶️",
-                            text: "En cours",
-                            color: "text-green-600",
-                            bgColor: "bg-green-100",
-                        };
-                    case READING_STATES.PAUSED:
-                        return {
-                            icon: "⏸️",
-                            text: "En pause",
-                            color: "text-yellow-600",
-                            bgColor: "bg-yellow-100",
-                        };
-                    case READING_STATES.FINISHED:
-                        return {
-                            icon: "✅",
-                            text: "Terminé",
-                            color: "text-blue-600",
-                            bgColor: "bg-blue-100",
-                        };
-                    default:
-                        return null;
-                }
-            };
+        if (!isFullscreen || state === READING_STATES.IDLE) return null;
 
-            const stateInfo = getStateInfo();
-            if (!stateInfo) return null;
+        const getStateInfo = () => {
+            switch (state) {
+                case READING_STATES.PLAYING:
+                    return {
+                        icon: "▶️",
+                        text: "En cours",
+                        color: "text-green-600",
+                        bgColor: "bg-green-100",
+                    };
+                case READING_STATES.PAUSED:
+                    return {
+                        icon: "⏸️",
+                        text: "En pause",
+                        color: "text-yellow-600",
+                        bgColor: "bg-yellow-100",
+                    };
+                case READING_STATES.FINISHED:
+                    return {
+                        icon: "✅",
+                        text: "Terminé",
+                        color: "text-blue-600",
+                        bgColor: "bg-blue-100",
+                    };
+                default:
+                    return null;
+            }
+        };
 
-            return (
+        const stateInfo = getStateInfo();
+        if (!stateInfo) return null;
+
+        return (
+            <div
+                className={`absolute top-8 left-8 px-4 py-2 rounded-lg ${stateInfo.bgColor}`}
+            >
                 <div
-                    className={`absolute top-8 left-8 px-4 py-2 rounded-lg ${stateInfo.bgColor}`}
+                    className={`flex items-center gap-2 text-sm font-medium ${stateInfo.color}`}
                 >
-                    <div
-                        className={`flex items-center gap-2 text-sm font-medium ${stateInfo.color}`}
-                    >
-                        <span>{stateInfo.icon}</span>
-                        <span>{stateInfo.text}</span>
-                    </div>
+                    <span>{stateInfo.icon}</span>
+                    <span>{stateInfo.text}</span>
                 </div>
-            );
-        }
-        return null;
+            </div>
+        );
     };
 
-    // Message d'état pour les états non-actifs
+    // Message d'état
     const getStatusMessage = () => {
         switch (state) {
             case READING_STATES.IDLE:
@@ -276,7 +262,7 @@ const WordDisplay = ({
             {/* Informations de tempo en plein écran */}
             {isFullscreen && state === READING_STATES.PLAYING && (
                 <div className="absolute bottom-8 left-8 text-sm text-gray-600 bg-white bg-opacity-90 px-3 py-2 rounded">
-                    {(60 / tempo).toFixed(0)} mots/min
+                    {Math.round(60 / tempo)} mots/min
                 </div>
             )}
         </div>

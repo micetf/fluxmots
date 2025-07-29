@@ -11,8 +11,6 @@ import { WORD_LISTS, getListById } from "@data/wordLists";
 import {
     DEFAULT_SETTINGS,
     MICETF_CONFIG,
-    DISPLAY_MODES,
-    FONT_SIZES,
     READING_STATES,
 } from "@data/constants";
 import { getPerformanceRating } from "@utils/performance";
@@ -20,7 +18,6 @@ import "@micetf/ui/index.css";
 
 /**
  * Composant principal de l'application FluxMots
- * Orchestration de tous les composants et gestion de l'état global
  */
 function App() {
     // État des paramètres et persistance
@@ -29,6 +26,7 @@ function App() {
         updateSetting,
         isLoading: settingsLoading,
     } = useAppSettings(DEFAULT_SETTINGS);
+
     const {
         customLists,
         addCustomList,
@@ -180,7 +178,6 @@ function App() {
     const handleCustomListDelete = useCallback(
         (listId) => {
             deleteCustomList(listId);
-            // Si la liste supprimée était sélectionnée, revenir à la liste par défaut
             if (settings.selectedList === listId) {
                 updateSetting("selectedList", "ce1_officielle");
             }
@@ -193,7 +190,7 @@ function App() {
         if (!lastSessionStats) return null;
 
         const rating = getPerformanceRating(
-            lastSessionStats.performance.efficiency
+            lastSessionStats.performance?.efficiency || 0
         );
 
         return (
@@ -216,7 +213,8 @@ function App() {
                                     Durée
                                 </div>
                                 <div className="text-lg">
-                                    {lastSessionStats.duration.formatted}
+                                    {lastSessionStats.duration?.formatted ||
+                                        "N/A"}
                                 </div>
                             </div>
                             <div className="text-center">
@@ -224,7 +222,8 @@ function App() {
                                     Vitesse
                                 </div>
                                 <div className="text-lg">
-                                    {lastSessionStats.performance.actualWPM}{" "}
+                                    {lastSessionStats.performance?.actualWPM ||
+                                        0}{" "}
                                     mots/min
                                 </div>
                             </div>
@@ -233,7 +232,7 @@ function App() {
                                     Mots lus
                                 </div>
                                 <div className="text-lg">
-                                    {lastSessionStats.summary.totalWords}
+                                    {lastSessionStats.summary?.totalWords || 0}
                                 </div>
                             </div>
                             <div className="text-center">
@@ -241,7 +240,9 @@ function App() {
                                     Efficacité
                                 </div>
                                 <div className="text-lg">
-                                    {lastSessionStats.performance.efficiency}%
+                                    {lastSessionStats.performance?.efficiency ||
+                                        0}
+                                    %
                                 </div>
                             </div>
                         </div>
@@ -322,68 +323,28 @@ function App() {
                                 <div>
                                     <kbd className="px-2 py-1 bg-gray-100 rounded">
                                         Espace
-                                    </kbd>{" "}
+                                    </kbd>
                                     Lecture/Pause
                                 </div>
                                 <div>
                                     <kbd className="px-2 py-1 bg-gray-100 rounded">
                                         Échap
-                                    </kbd>{" "}
+                                    </kbd>
                                     Arrêter
                                 </div>
                                 <div>
                                     <kbd className="px-2 py-1 bg-gray-100 rounded">
                                         F
-                                    </kbd>{" "}
+                                    </kbd>
                                     Plein écran
                                 </div>
                                 <div>
                                     <kbd className="px-2 py-1 bg-gray-100 rounded">
                                         S
-                                    </kbd>{" "}
+                                    </kbd>
                                     Mélanger
                                 </div>
                             </div>
-                        </section>
-
-                        <section>
-                            <h3 className="font-bold mb-2">
-                                Recommandations pédagogiques
-                            </h3>
-                            <ul className="list-disc list-inside space-y-1">
-                                <li>
-                                    <strong>Mi-CP :</strong> 30 mots/min (2
-                                    sec/mot)
-                                </li>
-                                <li>
-                                    <strong>Fin CP :</strong> 40 mots/min (1.5
-                                    sec/mot)
-                                </li>
-                                <li>
-                                    <strong>CE1 :</strong> 50 mots/min (1.2
-                                    sec/mot)
-                                </li>
-                                <li>
-                                    <strong>CE2+ :</strong> 75+ mots/min (0.8
-                                    sec/mot)
-                                </li>
-                            </ul>
-                        </section>
-
-                        <section>
-                            <h3 className="font-bold mb-2">
-                                Modes d'affichage
-                            </h3>
-                            <ul className="list-disc list-inside space-y-1">
-                                <li>
-                                    <strong>Séquentiel :</strong> Mots dans
-                                    l'ordre de la liste
-                                </li>
-                                <li>
-                                    <strong>Aléatoire :</strong> Mots mélangés
-                                    pour éviter la mémorisation
-                                </li>
-                            </ul>
                         </section>
                     </div>
                 </div>
@@ -421,7 +382,6 @@ function App() {
                     tempo={settings.tempo}
                 />
 
-                {/* Bouton de sortie du plein écran */}
                 <button
                     onClick={exitFullscreen}
                     className="fixed top-4 right-4 bg-black bg-opacity-50 text-white px-4 py-2 rounded-lg hover:bg-opacity-70 transition-all"
@@ -438,7 +398,6 @@ function App() {
     // Interface normale
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Navbar MiCetF */}
             <Navbar
                 breadcrumb={MICETF_CONFIG.breadcrumb}
                 subtitle={MICETF_CONFIG.subtitle}
@@ -450,10 +409,8 @@ function App() {
                 contactEmail={MICETF_CONFIG.contactEmail}
             />
 
-            {/* Contenu principal */}
             <main className="pt-20 pb-8">
                 <div className="container mx-auto px-4">
-                    {/* En-tête */}
                     <div className="text-center mb-8">
                         <h1 className="text-3xl font-bold text-gray-800 mb-2">
                             FluxMots
@@ -482,7 +439,6 @@ function App() {
 
                         {/* Panneau latéral */}
                         <div className="space-y-6">
-                            {/* Contrôles */}
                             <Controls
                                 state={wordFlow.state}
                                 onPlay={wordFlow.play}
@@ -497,7 +453,6 @@ function App() {
                                 isFullscreen={isFullscreen}
                             />
 
-                            {/* Bouton paramètres */}
                             <button
                                 onClick={() => setShowSettings(!showSettings)}
                                 className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
@@ -531,7 +486,6 @@ function App() {
                 </div>
             </main>
 
-            {/* Modals */}
             <HelpModal />
             <SessionStats />
         </div>

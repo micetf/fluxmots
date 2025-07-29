@@ -15,7 +15,6 @@ import {
 
 /**
  * Composant des contrôles de lecture de fluence
- * Inclut les boutons de contrôle, réglages de tempo et raccourcis clavier
  */
 const Controls = ({
     state,
@@ -34,7 +33,6 @@ const Controls = ({
     // Gestion des raccourcis clavier
     const handleKeyPress = useCallback(
         (event) => {
-            // Ignorer si l'utilisateur tape dans un champ de saisie
             if (
                 event.target.tagName === "INPUT" ||
                 event.target.tagName === "TEXTAREA"
@@ -88,7 +86,7 @@ const Controls = ({
         return () => document.removeEventListener("keydown", handleKeyPress);
     }, [handleKeyPress]);
 
-    // Boutons de contrôle principal
+    // Bouton de lecture principal
     const PlayButton = () => {
         const isPlaying = state === READING_STATES.PLAYING;
         const isPaused = state === READING_STATES.PAUSED;
@@ -138,13 +136,13 @@ const Controls = ({
                 onClick={handleClick}
                 disabled={disabled}
                 className={`
-          flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all
-          ${
-              disabled
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-flux-primary text-white hover:bg-flux-secondary shadow-lg hover:shadow-xl transform hover:scale-105"
-          }
-        `}
+                    flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all
+                    ${
+                        disabled
+                            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                            : "bg-flux-primary text-white hover:bg-flux-secondary shadow-lg hover:shadow-xl transform hover:scale-105"
+                    }
+                `}
                 title={content.title}
                 aria-label={content.text}
             >
@@ -194,7 +192,7 @@ const Controls = ({
                         step={TEMPO_CONFIG.STEP}
                         value={tempo}
                         onChange={handleTempoChange}
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                         disabled={state === READING_STATES.PLAYING}
                     />
 
@@ -212,14 +210,14 @@ const Controls = ({
                             onClick={() => onTempoChange(preset.value)}
                             disabled={state === READING_STATES.PLAYING}
                             className={`
-                text-xs px-2 py-1 rounded border transition-colors
-                ${
-                    tempo === preset.value
-                        ? "bg-flux-primary text-white border-flux-primary"
-                        : "bg-white text-gray-600 border-gray-300 hover:border-flux-primary"
-                }
-                ${state === READING_STATES.PLAYING ? "opacity-50 cursor-not-allowed" : ""}
-              `}
+                                text-xs px-2 py-1 rounded border transition-colors
+                                ${
+                                    tempo === preset.value
+                                        ? "bg-flux-primary text-white border-flux-primary"
+                                        : "bg-white text-gray-600 border-gray-300 hover:border-flux-primary"
+                                }
+                                ${state === READING_STATES.PLAYING ? "opacity-50 cursor-not-allowed" : ""}
+                            `}
                             title={preset.label}
                         >
                             {preset.level}
@@ -254,13 +252,13 @@ const Controls = ({
                     onClick={onStop}
                     disabled={state === READING_STATES.IDLE}
                     className={`
-            flex items-center gap-2 px-4 py-3 rounded-lg font-medium transition-all
-            ${
-                state === READING_STATES.IDLE
-                    ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                    : "bg-gray-500 text-white hover:bg-gray-600 shadow-md hover:shadow-lg"
-            }
-          `}
+                        flex items-center gap-2 px-4 py-3 rounded-lg font-medium transition-all
+                        ${
+                            state === READING_STATES.IDLE
+                                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                                : "bg-gray-500 text-white hover:bg-gray-600 shadow-md hover:shadow-lg"
+                        }
+                    `}
                     title="Arrêter et remettre à zéro (Échap)"
                     aria-label="Arrêter"
                 >
@@ -273,13 +271,13 @@ const Controls = ({
                         onClick={onShuffle}
                         disabled={state === READING_STATES.PLAYING}
                         className={`
-              flex items-center gap-2 px-4 py-3 rounded-lg font-medium transition-all
-              ${
-                  state === READING_STATES.PLAYING
-                      ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                      : "bg-orange-500 text-white hover:bg-orange-600 shadow-md hover:shadow-lg"
-              }
-            `}
+                            flex items-center gap-2 px-4 py-3 rounded-lg font-medium transition-all
+                            ${
+                                state === READING_STATES.PLAYING
+                                    ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                                    : "bg-orange-500 text-white hover:bg-orange-600 shadow-md hover:shadow-lg"
+                            }
+                        `}
                         title="Mélanger les mots (S)"
                         aria-label="Mélanger"
                     >
@@ -300,7 +298,7 @@ const Controls = ({
                     title="Mode plein écran (F)"
                     aria-label="Plein écran"
                 >
-                    <Icon name={ICONS.SEARCH} size="4" />
+                    <span className="text-lg">🔍</span>
                     <span>Plein écran</span>
                 </button>
             </div>
@@ -310,24 +308,26 @@ const Controls = ({
                 <div className="font-medium mb-2">Raccourcis clavier :</div>
                 <div className="grid grid-cols-2 gap-1">
                     <div>
-                        <kbd className="px-1 py-0.5 bg-gray-100 rounded">
+                        <kbd className="px-1 py-0.5 bg-gray-100 rounded text-xs">
                             Espace
                         </kbd>{" "}
                         Lecture/Pause
                     </div>
                     <div>
-                        <kbd className="px-1 py-0.5 bg-gray-100 rounded">
+                        <kbd className="px-1 py-0.5 bg-gray-100 rounded text-xs">
                             Échap
                         </kbd>{" "}
                         Stop
                     </div>
                     <div>
-                        <kbd className="px-1 py-0.5 bg-gray-100 rounded">F</kbd>{" "}
+                        <kbd className="px-1 py-0.5 bg-gray-100 rounded text-xs">
+                            F
+                        </kbd>{" "}
                         Plein écran
                     </div>
                     {canShuffle && (
                         <div>
-                            <kbd className="px-1 py-0.5 bg-gray-100 rounded">
+                            <kbd className="px-1 py-0.5 bg-gray-100 rounded text-xs">
                                 S
                             </kbd>{" "}
                             Mélanger

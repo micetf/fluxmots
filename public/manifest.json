@@ -1,0 +1,39 @@
+{
+    "name": "FluxMots - Fluence de Lecture",
+    "short_name": "FluxMots",
+    "description": "Application de fluence de lecture pour enseignants du premier degré",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#4a90e2",
+    "orientation": "any",
+    "categories": ["education", "productivity"],
+    "icons": [
+        {
+            "src": "/icons/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable any"
+        },
+        {
+            "src": "/icons/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable any"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Démarrer la lecture",
+            "short_name": "Lecture",
+            "description": "Démarrer une session de fluence",
+            "url": "/",
+            "icons": [
+                {
+                    "src": "/icons/icon-192x192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        }
+    ]
+}
