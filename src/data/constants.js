@@ -123,10 +123,10 @@ export const PERFORMANCE_TARGETS = {
 
 // Configuration spécifique MiCetF.fr
 export const MICETF_CONFIG = {
-    breadcrumb: ["MiCetF", "outils", "fluxmots"],
+    breadcrumb: ["MiCetF", "fluxmots"],
     subtitle: "Fluence de lecture",
     showHelp: true,
-    showSearch: true,
+    showSearch: false,
     baseUrl: "https://micetf.fr",
     paypalId: "Q2XYVFP4EEX2J",
     contactEmail: "webmaster@micetf.fr",

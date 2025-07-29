@@ -1,4 +1,5 @@
 // src/App.jsx
+// Version corrigée - Élimination des boucles infinies
 
 import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { Navbar } from "@micetf/ui";
@@ -14,7 +15,6 @@ import {
     READING_STATES,
 } from "@data/constants";
 import { getPerformanceRating } from "@utils/performance";
-import "@micetf/ui/index.css";
 
 /**
  * Composant principal de l'application FluxMots - Version optimisée
@@ -40,17 +40,19 @@ function App() {
     const [showHelp, setShowHelp] = useState(false);
     const [lastSessionStats, setLastSessionStats] = useState(null);
 
-    // Récupération de la liste sélectionnée - MÉMORISÉE
-    const getCurrentList = useCallback(() => {
+    // ✅ CORRECTION 1: Stabilisation de getCurrentList avec une clé de cache
+    const getCurrentList = useMemo(() => {
+        const selectedListId = settings.selectedList;
+
         // Vérifier d'abord dans les listes officielles
-        const officialList = getListById(settings.selectedList);
+        const officialList = getListById(selectedListId);
         if (officialList) {
             return officialList;
         }
 
         // Puis dans les listes personnalisées
         const customList = customLists.find(
-            (list) => list.id === settings.selectedList
+            (list) => list.id === selectedListId
         );
         if (customList) {
             return customList;
@@ -58,10 +60,12 @@ function App() {
 
         // Fallback vers la liste CE1 par défaut
         return WORD_LISTS.CE1_OFFICIELLE;
-    }, [settings.selectedList, customLists]);
+    }, [settings.selectedList, customLists]); // Direct useMemo sans useCallback intermédiaire
 
-    const currentList = useMemo(() => getCurrentList(), [getCurrentList]);
-    const currentWords = useMemo(() => currentList?.words || [], [currentList]);
+    // ✅ CORRECTION 2: currentWords directement dérivé
+    const currentWords = useMemo(() => {
+        return getCurrentList?.words || [];
+    }, [getCurrentList]);
 
     // Debug : vérification que les mots sont bien chargés
     useEffect(() => {
@@ -69,18 +73,18 @@ function App() {
             "Mots actuels:",
             currentWords.length,
             "Liste:",
-            currentList?.name
+            getCurrentList?.name
         );
-    }, [currentWords, currentList]);
+    }, [currentWords, getCurrentList]);
 
-    // Hook principal de gestion de la fluence avec dependencies explicites
+    // ✅ CORRECTION 3: Hook principal avec dépendances stables
     const wordFlow = useWordFlow(
         currentWords,
         settings.tempo,
         settings.displayMode
     );
 
-    // Handlers stables pour les paramètres - MÉMORISÉS
+    // ✅ CORRECTION 4: Handlers stables avec useCallback optimisés
     const handleListChange = useCallback(
         (listId) => {
             console.log("Changement de liste:", listId);
@@ -119,7 +123,7 @@ function App() {
         [updateSetting]
     );
 
-    // Handlers des listes personnalisées - STABLES
+    // ✅ CORRECTION 5: Handlers des listes personnalisées stables
     const handleCustomListAdd = useCallback(
         (listData) => {
             const listId = addCustomList(listData);
@@ -207,13 +211,19 @@ function App() {
         }
     }, [wordFlow.isFinished, wordFlow.stats]);
 
-    // Composant des statistiques de fin de session - MÉMORISÉ
+    // ✅ CORRECTION 6: Composants mémorisés avec React.memo pour éviter les re-rendus
     const SessionStats = useMemo(() => {
         if (!lastSessionStats) return null;
 
         const rating = getPerformanceRating(
             lastSessionStats.performance?.efficiency || 0
         );
+
+        const handleContinue = () => setLastSessionStats(null);
+        const handleRestart = () => {
+            setLastSessionStats(null);
+            wordFlow.play();
+        };
 
         return (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -271,16 +281,13 @@ function App() {
 
                         <div className="mt-6 space-y-2">
                             <button
-                                onClick={() => setLastSessionStats(null)}
+                                onClick={handleContinue}
                                 className="w-full px-4 py-2 bg-flux-primary text-white rounded-lg hover:bg-flux-secondary transition-colors"
                             >
                                 Continuer
                             </button>
                             <button
-                                onClick={() => {
-                                    setLastSessionStats(null);
-                                    wordFlow.play();
-                                }}
+                                onClick={handleRestart}
                                 className="w-full px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
                             >
                                 Recommencer
@@ -427,7 +434,6 @@ function App() {
                 onHelpClick={toggleHelp}
                 showSearch={MICETF_CONFIG.showSearch}
                 baseUrl={MICETF_CONFIG.baseUrl}
-                paypalId={MICETF_CONFIG.paypalId}
                 contactEmail={MICETF_CONFIG.contactEmail}
             />
 
@@ -439,7 +445,7 @@ function App() {
                         </h1>
                         <p className="text-gray-600">
                             Entraînement à la fluence de lecture •{" "}
-                            {currentList?.name || "Aucune liste"} •{" "}
+                            {getCurrentList?.name || "Aucune liste"} •{" "}
                             {currentWords.length} mots
                         </p>
                     </div>

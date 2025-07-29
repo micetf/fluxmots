@@ -1,6 +1,7 @@
 // src/hooks/useLocalStorage.js
+// Version corrigée - Stabilisation des callbacks
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 /**
  * Hook pour la gestion de la persistance dans le localStorage
@@ -14,19 +15,25 @@ export const useLocalStorage = (key, initialValue) => {
     const [storedValue, setStoredValue] = useState(initialValue);
     const [isLoading, setIsLoading] = useState(true);
 
+    // ✅ CORRECTION: Ref pour stabiliser initialValue
+    const initialValueRef = useRef(initialValue);
+    useEffect(() => {
+        initialValueRef.current = initialValue;
+    }, [initialValue]);
+
     /**
      * Lecture sécurisée du localStorage
      */
     const readValue = useCallback(() => {
         try {
             if (typeof window === "undefined") {
-                return initialValue;
+                return initialValueRef.current;
             }
 
             const item = window.localStorage.getItem(key);
 
             if (item === null) {
-                return initialValue;
+                return initialValueRef.current;
             }
 
             return JSON.parse(item);
@@ -35,9 +42,9 @@ export const useLocalStorage = (key, initialValue) => {
                 `Erreur lecture localStorage pour la clé "${key}":`,
                 error
             );
-            return initialValue;
+            return initialValueRef.current;
         }
-    }, [key, initialValue]);
+    }, [key]); // ✅ Suppression de initialValue des dépendances
 
     /**
      * Écriture sécurisée dans le localStorage
@@ -88,7 +95,7 @@ export const useLocalStorage = (key, initialValue) => {
                 return false;
             }
 
-            setStoredValue(initialValue);
+            setStoredValue(initialValueRef.current);
             window.localStorage.removeItem(key);
             return true;
         } catch (error) {
@@ -98,7 +105,7 @@ export const useLocalStorage = (key, initialValue) => {
             );
             return false;
         }
-    }, [key, initialValue]);
+    }, [key]); // ✅ Suppression de initialValue des dépendances
 
     // Lecture initiale
     useEffect(() => {
@@ -114,7 +121,7 @@ export const useLocalStorage = (key, initialValue) => {
                 try {
                     const newValue = e.newValue
                         ? JSON.parse(e.newValue)
-                        : initialValue;
+                        : initialValueRef.current;
                     setStoredValue(newValue);
                 } catch (error) {
                     console.warn(
@@ -130,7 +137,7 @@ export const useLocalStorage = (key, initialValue) => {
             return () =>
                 window.removeEventListener("storage", handleStorageChange);
         }
-    }, [key, initialValue]);
+    }, [key]); // ✅ Suppression de initialValue des dépendances
 
     return [storedValue, writeValue, removeValue, isLoading];
 };
@@ -144,6 +151,12 @@ export const useAppSettings = (defaultSettings) => {
         defaultSettings
     );
 
+    // ✅ CORRECTION: Callback stable avec ref
+    const defaultSettingsRef = useRef(defaultSettings);
+    useEffect(() => {
+        defaultSettingsRef.current = defaultSettings;
+    }, [defaultSettings]);
+
     const updateSetting = useCallback(
         (key, value) => {
             setSettings((prev) => ({
@@ -155,8 +168,8 @@ export const useAppSettings = (defaultSettings) => {
     );
 
     const resetSettings = useCallback(() => {
-        setSettings(defaultSettings);
-    }, [setSettings, defaultSettings]);
+        setSettings(defaultSettingsRef.current);
+    }, [setSettings]); // ✅ Suppression de defaultSettings des dépendances
 
     return {
         settings,
@@ -177,7 +190,7 @@ export const useCustomLists = () => {
         (list) => {
             const newList = {
                 ...list,
-                id: `custom_${Date.now()}`,
+                id: `custom_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, // ✅ ID plus unique
                 created: new Date().toISOString(),
                 isCustom: true,
             };
@@ -236,22 +249,28 @@ export const useCustomLists = () => {
 export const useSessionStorage = (key, initialValue) => {
     const [storedValue, setStoredValue] = useState(initialValue);
 
+    // ✅ CORRECTION: Ref pour stabiliser initialValue
+    const initialValueRef = useRef(initialValue);
+    useEffect(() => {
+        initialValueRef.current = initialValue;
+    }, [initialValue]);
+
     const readValue = useCallback(() => {
         try {
             if (typeof window === "undefined") {
-                return initialValue;
+                return initialValueRef.current;
             }
 
             const item = window.sessionStorage.getItem(key);
-            return item ? JSON.parse(item) : initialValue;
+            return item ? JSON.parse(item) : initialValueRef.current;
         } catch (error) {
             console.warn(
                 `Erreur lecture sessionStorage pour la clé "${key}":`,
                 error
             );
-            return initialValue;
+            return initialValueRef.current;
         }
-    }, [key, initialValue]);
+    }, [key]); // ✅ Suppression de initialValue des dépendances
 
     const writeValue = useCallback(
         (value) => {

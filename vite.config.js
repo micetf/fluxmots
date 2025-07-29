@@ -55,7 +55,8 @@ export default defineConfig({
         rollupOptions: {
             output: {
                 manualChunks: {
-                    vendor: ["react", "react-dom"],
+                    "vendor-react": ["react", "react-dom"],
+                    "vendor-micetf": ["@micetf/ui"],
                 },
             },
         },

@@ -1,6 +1,7 @@
 // src/components/Controls/Controls.jsx
+// Version corrigée - Stabilisation des gestionnaires d'événements
 
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect, useCallback, useRef } from "react";
 import PropTypes from "prop-types";
 import { Icon, ICONS } from "@micetf/ui";
 import {
@@ -30,7 +31,27 @@ const Controls = ({
     isFullscreen = false,
     className = "",
 }) => {
-    // Gestion des raccourcis clavier
+    // ✅ CORRECTION 1: Refs pour stabiliser les callbacks
+    const handlersRef = useRef({
+        onPlay,
+        onPause,
+        onStop,
+        onFullscreen,
+        onShuffle,
+    });
+
+    // Mettre à jour les refs avec les dernières valeurs
+    useEffect(() => {
+        handlersRef.current = {
+            onPlay,
+            onPause,
+            onStop,
+            onFullscreen,
+            onShuffle,
+        };
+    }, [onPlay, onPause, onStop, onFullscreen, onShuffle]);
+
+    // ✅ CORRECTION 2: Gestionnaire de touches stable
     const handleKeyPress = useCallback(
         (event) => {
             if (
@@ -40,54 +61,49 @@ const Controls = ({
                 return;
             }
 
+            // Utiliser les refs pour éviter les dépendances instables
+            const handlers = handlersRef.current;
+
             switch (event.key) {
                 case KEYBOARD_SHORTCUTS.PLAY_PAUSE:
                     event.preventDefault();
                     if (state === READING_STATES.PLAYING) {
-                        onPause();
+                        handlers.onPause();
                     } else {
-                        onPlay();
+                        handlers.onPlay();
                     }
                     break;
                 case KEYBOARD_SHORTCUTS.STOP:
                     event.preventDefault();
-                    onStop();
+                    handlers.onStop();
                     break;
                 case KEYBOARD_SHORTCUTS.FULLSCREEN:
                     if (!isFullscreen) {
                         event.preventDefault();
-                        onFullscreen();
+                        handlers.onFullscreen();
                     }
                     break;
                 case KEYBOARD_SHORTCUTS.SHUFFLE:
                     if (canShuffle) {
                         event.preventDefault();
-                        onShuffle();
+                        handlers.onShuffle();
                     }
                     break;
                 default:
                     break;
             }
         },
-        [
-            state,
-            onPlay,
-            onPause,
-            onStop,
-            onFullscreen,
-            onShuffle,
-            canShuffle,
-            isFullscreen,
-        ]
+        [state, canShuffle, isFullscreen] // ✅ Dépendances réduites et stables
     );
 
+    // ✅ CORRECTION 3: Event listener stable
     useEffect(() => {
         document.addEventListener("keydown", handleKeyPress);
         return () => document.removeEventListener("keydown", handleKeyPress);
     }, [handleKeyPress]);
 
-    // Bouton de lecture principal
-    const PlayButton = () => {
+    // ✅ CORRECTION 4: Bouton de lecture optimisé avec useCallback
+    const PlayButton = useCallback(() => {
         const isPlaying = state === READING_STATES.PLAYING;
         const isPaused = state === READING_STATES.PAUSED;
         const isFinished = state === READING_STATES.FINISHED;
@@ -150,10 +166,10 @@ const Controls = ({
                 <span>{content.text}</span>
             </button>
         );
-    };
+    }, [state, totalWords, onPlay, onPause]);
 
-    // Contrôle du tempo
-    const TempoControl = () => {
+    // ✅ CORRECTION 5: Contrôle du tempo optimisé
+    const TempoControl = useCallback(() => {
         const wpm = tempoToWordsPerMinute(tempo);
         const estimatedTime = calculateEstimatedTime(totalWords, tempo);
 
@@ -233,7 +249,7 @@ const Controls = ({
                 )}
             </div>
         );
-    };
+    }, [tempo, totalWords, state, onTempoChange]);
 
     const containerClasses = [
         "bg-white rounded-lg shadow-sm border p-6 space-y-6",
